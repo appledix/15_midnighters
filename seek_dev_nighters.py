@@ -4,9 +4,6 @@ from datetime import datetime, time
 import pytz
 import requests
 
-SOLUTION_ATTEMPTS_INFO_URL = 'https://devman.org/api/challenges/solution_attempts/'
-OWL_PERIOD = {'start':time(0,0), 'end':time(6,0)}
-
 
 def get_number_of_pages(url):
     return requests.get(url).json()['number_of_pages']                 
@@ -20,7 +17,8 @@ def get_time_of_sending(timestamp, timezone):
     utc_datetime = datetime.utcfromtimestamp(timestamp).replace(tzinfo=pytz.utc)
     return utc_datetime.astimezone(pytz.timezone(timezone)).time()
 
-def is_time_in_owl_period(sending_time, owl_period):
+def is_time_in_owl_period(sending_time):
+    owl_period = {'start':time(0,0), 'end':time(6,0)}
     return sending_time >= owl_period['start'] and sending_time <= owl_period['end']
 
 def get_all_attempts(url):
@@ -28,20 +26,20 @@ def get_all_attempts(url):
             for attempt in page['records']:
                 yield attempt
 
-def get_midnighters(attempts, owl_period):
+def get_midnighters(attempts):
     midnighters = []
     for attempt in attempts:
         if attempt['timestamp']:
             sending_time = get_time_of_sending(attempt['timestamp'],
                                                attempt['timezone'])
-            if is_time_in_owl_period(sending_time, owl_period):
+            if is_time_in_owl_period(sending_time):
                 midnighters.append(attempt['username'])
     return set(midnighters)
 
 
 def main(): 
-    attempts = get_all_attempts(SOLUTION_ATTEMPTS_INFO_URL)
-    midnighters = get_midnighters(attempts, OWL_PERIOD)
+    attempts = get_all_attempts('https://devman.org/api/challenges/solution_attempts/')
+    midnighters = get_midnighters(attempts)
     if midnighters:
         print('Found midnighters:')
         for i, user in enumerate(midnighters,1):
