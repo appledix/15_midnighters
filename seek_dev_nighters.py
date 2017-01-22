@@ -5,12 +5,14 @@ import pytz
 import requests
 
 
-def get_number_of_pages(url):
-    return requests.get(url).json()['number_of_pages']                 
+def get_number_of_pages(page):
+    return page['number_of_pages']                 
 
 def load_pages(url):
-    num_of_pages = get_number_of_pages(url)
-    for page_num in range(1, num_of_pages + 1):
+    first_page = requests.get(url, params={'page':1}).json()
+    yield first_page
+    num_of_pages = get_number_of_pages(first_page)
+    for page_num in range(2, num_of_pages + 1):
         yield requests.get(url, params={'page':page_num}).json()
 
 def get_time_of_sending(timestamp, timezone):
