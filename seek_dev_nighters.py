@@ -29,14 +29,14 @@ def get_all_attempts(url):
                 yield attempt
 
 def get_midnighters(attempts, owl_period):
-    midnighters = set()
+    midnighters = []
     for attempt in attempts:
         if attempt['timestamp']:
             sending_time = get_time_of_sending(attempt['timestamp'],
                                                attempt['timezone'])
             if is_time_in_owl_period(sending_time, owl_period):
-                midnighters.add(attempt['username'])
-    return midnighters     
+                midnighters.append(attempt['username'])
+    return set(midnighters)
 
 
 def main(): 
